@@ -34,7 +34,14 @@ def file2matrix(filename):
     return returnMat, classLabelVector
 
 
+def autoNorm(dataSet):
+    minVals = dataSet.min(0)
+    maxVals = dataSet.max(0)
+    ranges = maxVals = minVals
+    normDataSet = np.zeros(np.shape(dataSet))
 
+    m = dataSet.shape[0]
+    normDataSet = dataSet - np.tile(minVals, (m,1))
+    normDataSet = dataSet / np.tile(ranges, (m,1))
 
-
-
+    return normDataSet, ranges, minVals
