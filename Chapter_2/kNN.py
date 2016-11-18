@@ -37,7 +37,7 @@ def file2matrix(filename):
 def autoNorm(dataSet):
     minVals = dataSet.min(0)
     maxVals = dataSet.max(0)
-    ranges = maxVals = minVals
+    ranges = maxVals - minVals
     normDataSet = np.zeros(np.shape(dataSet))
 
     m = dataSet.shape[0]
@@ -45,3 +45,50 @@ def autoNorm(dataSet):
     normDataSet = dataSet / np.tile(ranges, (m,1))
 
     return normDataSet, ranges, minVals
+
+
+def autoNorm2(dataSet):
+    minVals = dataSet.min(0)
+    maxVals = dataSet.max(0)
+    ranges = maxVals - minVals
+    normDataSet = dataSet - np.tile(minVals, (dataSet.shape[0], 1))
+    normDataSet = normDataSet / np.tile(ranges, (dataSet.shape[0], 1))
+    return normDataSet, ranges, minVals
+
+
+def datingClassTest(filename, hoRatio):
+
+    datingDataMat, datingLabels = file2matrix(filename)
+    normMat, ranges, minVals = autoNorm(datingDataMat)
+    m = normMat.shape[0]
+    numTestVecs = int(m * hoRatio)
+    errorCount = 0.0
+
+    for i in range(numTestVecs):
+        classifferResult = classify0(normMat[i, :], normMat[numTestVecs:m, :], \
+                                     datingLabels[numTestVecs:m], 3)
+        print "the classifier came back with: %d, the real answer is: %d"\
+        % (classifferResult, datingLabels[i])
+
+        if(classifferResult != datingLabels[i]): errorCount += 1.0
+    print "the total error rate is: %f" %(errorCount / float(numTestVecs))
+
+
+def datingCLassTest2(filename, hoRatio):
+
+    datingDataMat, minVals, datingLabels = file2matrix(filename)
+    normMat, ranges, minVals = autoNorm2(datingDataMat)
+    m = normMat.shape[0]
+    numTestVecs = int(m * hoRatio)
+    errorCount = 0.0
+
+    for i in range(numTestVecs):
+        classifferResult = classify0(normMat[i, :], normMat[numTestVecs:m, :], \
+                                     datingLabels[numTestVecs], 3)
+        print "the classifier came back with: %d, the real answer is: %d"\
+        % (classifferResult, datingLabels[i])
+
+        if(classifferResult != datingLabels):
+            errorCount += 1.0
+    print "the total error rate is: %f" %(errorCount / float(numTestVecs))
+
