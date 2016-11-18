@@ -74,21 +74,20 @@ def datingClassTest(filename, hoRatio):
     print "the total error rate is: %f" %(errorCount / float(numTestVecs))
 
 
-def datingCLassTest2(filename, hoRatio):
+def demo(filename, hoRatio, k):
+    dataDatingSet, datingLabels = file2matrix(filename)
+    normData, ranges, minVals = autoNorm(dataDatingSet)
+    m = normData.shape[0]
 
-    datingDataMat, minVals, datingLabels = file2matrix(filename)
-    normMat, ranges, minVals = autoNorm2(datingDataMat)
-    m = normMat.shape[0]
     numTestVecs = int(m * hoRatio)
     errorCount = 0.0
-
     for i in range(numTestVecs):
-        classifferResult = classify0(normMat[i, :], normMat[numTestVecs:m, :], \
-                                     datingLabels[numTestVecs], 3)
-        print "the classifier came back with: %d, the real answer is: %d"\
-        % (classifferResult, datingLabels[i])
-
-        if(classifferResult != datingLabels):
-            errorCount += 1.0
-    print "the total error rate is: %f" %(errorCount / float(numTestVecs))
+        classifyResult = classify0(normData[i, :],\
+                                   normData[numTestVecs:m, :], \
+                                   datingLabels[numTestVecs:m], k)
+        if(classifyResult != datingLabels[i]):
+            errorCount += 1
+            print "the classifier came back with: %d, the real answer is: %d" \
+            %(classifyResult, datingLabels[i])
+    print "the total error rate is: %f" %(errorCount / float(m))
 

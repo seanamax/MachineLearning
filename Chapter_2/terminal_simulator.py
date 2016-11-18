@@ -2,6 +2,7 @@ import kNN
 import numpy
 import matplotlib
 import matplotlib.pyplot as plt
+import datetime
 
 
 # datingDataSet, datingLabelsSet = kNN.file2matrix('datingTestSet2.txt')
@@ -12,6 +13,9 @@ import matplotlib.pyplot as plt
 # # plt.show()
 #
 
-kNN.datingClassTest('datingTestSet2.txt', 0.1)
+startTime = datetime.datetime.now()
+kNN.demo('datingTestSet2.txt', 0.5, 3)
+endTime = datetime.datetime.now()
 
+print endTime - startTime
 
