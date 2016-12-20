@@ -1,5 +1,6 @@
 import numpy as np
 import operator
+from os import listdir
 
 def classify0(inX, dataSet, labels, k):
     dataSetSize = dataSet.shape[0]
@@ -38,21 +39,10 @@ def autoNorm(dataSet):
     minVals = dataSet.min(0)
     maxVals = dataSet.max(0)
     ranges = maxVals - minVals
-    normDataSet = np.zeros(np.shape(dataSet))
-
+    normDataSet = np.zero(dataSet)
     m = dataSet.shape[0]
-    normDataSet = dataSet - np.tile(minVals, (m,1))
-    normDataSet = dataSet / np.tile(ranges, (m,1))
-
-    return normDataSet, ranges, minVals
-
-
-def autoNorm2(dataSet):
-    minVals = dataSet.min(0)
-    maxVals = dataSet.max(0)
-    ranges = maxVals - minVals
-    normDataSet = dataSet - np.tile(minVals, (dataSet.shape[0], 1))
-    normDataSet = normDataSet / np.tile(ranges, (dataSet.shape[0], 1))
+    normDataSet = dataSet - np.tile(minVals, (m, 1))
+    normDataSet = normDataSet / np.tile(ranges, (m, 1))
     return normDataSet, ranges, minVals
 
 
@@ -74,20 +64,63 @@ def datingClassTest(filename, hoRatio):
     print "the total error rate is: %f" %(errorCount / float(numTestVecs))
 
 
-def demo(filename, hoRatio, k):
-    dataDatingSet, datingLabels = file2matrix(filename)
-    normData, ranges, minVals = autoNorm(dataDatingSet)
-    m = normData.shape[0]
+def classifyPerson(filePath):
+    resultList = ['not at all', 'in small does', 'in large does']
+    playGameTime = float(raw_input(\
+        "percentage of time spent playing video games?"))
+    ffMiles = float(raw_input(\
+        ""))
+    iceCreamCapacity = float(raw_input(\
+        "liters of ice cream comsumed per year?"))
 
-    numTestVecs = int(m * hoRatio)
+    dataSet, labels = file2matrix(filePath)
+    normSet, ranges, minVals = autoNorm(dataSet)
+    inX = np.array([ffMiles, playGameTime, iceCreamCapacity])
+    normInX = (inX - minVals) / ranges
+    result = classify0(normInX, normSet, labels)
+    print "You will probably like this person: ", \
+                resultList[result - 1]
+
+
+def img2vector(filename):
+    returnMat = np.zeros((1, 1024))
+    fr = open(filename)
+    for i in range(32):
+        line = fr.readline()
+        for j in range(32):
+            returnMat[0, 32*i + j] = int(line[j])
+
+    return returnMat
+
+
+def handwritingClassTest():
+    hwLabels = []
+    trainingFileList = listdir('trainingDigits')
+    m = len(trainingFileList)
+    trainingMat = np.zeros((m, 1024))
+    for i in range(m):
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        hwLabels.append(classNumStr)
+        trainingMat[i, :] = img2vector('trainingDigits/%s' % fileNameStr)
+
+    testFileList = listdir('testDigits')
     errorCount = 0.0
-    for i in range(numTestVecs):
-        classifyResult = classify0(normData[i, :],\
-                                   normData[numTestVecs:m, :], \
-                                   datingLabels[numTestVecs:m], k)
-        if(classifyResult != datingLabels[i]):
-            errorCount += 1
-            print "the classifier came back with: %d, the real answer is: %d" \
-            %(classifyResult, datingLabels[i])
-    print "the total error rate is: %f" %(errorCount / float(m))
+    mTest = len(testFileList)
+    for i in range(mTest):
+        fileNameStr = testFileList[i]
+        fileStr =fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        vectorUnderTest = img2vector('testDigits/%s' %fileNameStr)
+        classifferResult = classify0(vectorUnderTest, \
+                                     trainingMat, hwLabels, 3)
+
+        print "the classifier came back with: %d, the real answer is: %d" \
+        %(classifferResult, classNumStr)
+
+        if(classifferResult != classNumStr): errorCount += 1.0
+
+    print "\nthe total number iof errors is: %d" % errorCount
+    print "\nthe total error rate is: %f" % (errorCount / float(mTest))
 
